@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Market Watcher</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Market Watcher</h1>
+      <button id="settings-btn" aria-label="Settings">⚙️</button>
+    </header>
+    
+    <div id="assets-list" class="assets-list">
+      <!-- Assets will be injected here -->
+      <div class="loading">Loading prices...</div>
+    </div>
+
+    <div class="controls">
+      <input type="text" id="new-symbol" placeholder="Symbol (e.g. AAPL, bitcoin)">
+      <select id="asset-type">
+        <option value="stock">Stock</option>
+        <option value="crypto">Crypto</option>
+      </select>
+      <button id="add-btn">Add</button>
+    </div>
+
+    <div id="settings-panel" class="hidden">
+      <h3>Settings</h3>
+      <div class="form-group">
+        <label for="finnhub-key">Finnhub API Key (Stocks)</label>
+        <input type="password" id="finnhub-key" placeholder="Enter API Key">
+        <small>Get free key at <a href="https://finnhub.io" target="_blank">finnhub.io</a></small>
+      </div>
+      <button id="save-settings">Save</button>
+      <button id="close-settings">Close</button>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

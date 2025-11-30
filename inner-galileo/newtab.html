@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Watcher Dashboard</title>
+    <link rel="stylesheet" href="newtab.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <main class="main-content">
+            <header>
+                <div class="greeting">
+                    <h1>Market Dashboard</h1>
+                    <div id="market-status" class="market-status"></div>
+                </div>
+                <div class="date-display" id="current-date"></div>
+            </header>
+
+            <section class="charts-section">
+                <div class="chart-card">
+                    <h3>S&P 500 (SPY)</h3>
+                    <div class="chart-container" id="chart-spy">
+                        <!-- SVG Chart will be injected here -->
+                        <div class="loading-chart">Loading...</div>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3>NASDAQ (QQQ)</h3>
+                    <div class="chart-container" id="chart-qqq">
+                        <!-- SVG Chart will be injected here -->
+                        <div class="loading-chart">Loading...</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <h2>Watchlist</h2>
+            <div id="watchlist-container" class="watchlist-container">
+                <!-- Reusing watchlist logic -->
+                <div class="loading">Loading watchlist...</div>
+            </div>
+            <div class="sidebar-footer">
+                <button id="manage-btn">Manage Assets</button>
+            </div>
+        </aside>
+    </div>
+    <script src="newtab.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,171 @@
+body {
+  width: 350px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #1e1e1e;
+  color: #ffffff;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  padding: 16px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 8px;
+}
+
+h1 {
+  font-size: 18px;
+  margin: 0;
+  font-weight: 600;
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #ccc;
+  transition: color 0.2s;
+}
+
+button:hover {
+  color: #fff;
+}
+
+.assets-list {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 16px;
+}
+
+.asset-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: #2d2d2d;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.asset-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.asset-symbol {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.asset-name {
+  font-size: 11px;
+  color: #aaa;
+}
+
+.asset-price-info {
+  text-align: right;
+}
+
+.asset-price {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.asset-change {
+  font-size: 12px;
+}
+
+.positive {
+  color: #4caf50;
+}
+
+.negative {
+  color: #f44336;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  border-top: 1px solid #333;
+  padding-top: 16px;
+}
+
+input, select {
+  background-color: #2d2d2d;
+  border: 1px solid #444;
+  color: #fff;
+  padding: 6px;
+  border-radius: 4px;
+  outline: none;
+}
+
+input:focus, select:focus {
+  border-color: #666;
+}
+
+#new-symbol {
+  flex-grow: 1;
+}
+
+#add-btn, #save-settings, #close-settings {
+  background-color: #2196f3;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+}
+
+#add-btn:hover, #save-settings:hover {
+  background-color: #1976d2;
+}
+
+#settings-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #1e1e1e;
+  padding: 16px;
+  z-index: 10;
+}
+
+.hidden {
+  display: none;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+small {
+  display: block;
+  margin-top: 4px;
+  color: #888;
+}
+
+.delete-btn {
+  color: #666;
+  font-size: 12px;
+  margin-left: 8px;
+  padding: 2px 6px;
+}
+
+.delete-btn:hover {
+  color: #f44336;
+  background-color: rgba(244, 67, 54, 0.1);
+  border-radius: 4px;
+}
