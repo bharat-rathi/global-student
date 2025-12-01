@@ -48,6 +48,9 @@ export const Navbar = () => {
                         </>
                     ) : (
                         <div className="flex items-center gap-4">
+                            <Link to="/admin/login" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                                Admin
+                            </Link>
                             <Link to="/login" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                                 Log In
                             </Link>
@@ -88,6 +91,9 @@ export const Navbar = () => {
                             </>
                         ) : (
                             <>
+                                <Link to="/admin/login" className="text-sm font-medium p-2 hover:bg-white/5 rounded-lg">
+                                    Admin Portal
+                                </Link>
                                 <Link to="/login" className="text-sm font-medium p-2 hover:bg-white/5 rounded-lg">
                                     Log In
                                 </Link>
