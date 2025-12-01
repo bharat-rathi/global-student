@@ -25,12 +25,20 @@ export const Navbar = () => {
                 <div className="hidden md:flex items-center gap-6">
                     {user ? (
                         <>
-                            <Link to="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-                                Dashboard
-                            </Link>
-                            <Link to="/learn" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-                                Learn
-                            </Link>
+                            {user.role === 'admin' ? (
+                                <Link to="/admin/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                                    Admin Dashboard
+                                </Link>
+                            ) : (
+                                <>
+                                    <Link to="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                                        Dashboard
+                                    </Link>
+                                    <Link to="/learn" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                                        Learn
+                                    </Link>
+                                </>
+                            )}
                             <div className="flex items-center gap-4 ml-4 pl-4 border-l border-white/10">
                                 <div className="flex items-center gap-2">
                                     <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
@@ -48,11 +56,11 @@ export const Navbar = () => {
                         </>
                     ) : (
                         <div className="flex items-center gap-4">
-                            <Link to="/admin/login" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-                                Admin
-                            </Link>
                             <Link to="/login" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-                                Log In
+                                Student Login
+                            </Link>
+                            <Link to="/admin/login" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                                Admin Login
                             </Link>
                             <Link
                                 to="/register"
@@ -79,23 +87,31 @@ export const Navbar = () => {
                     <div className="container mx-auto px-4 py-4 flex flex-col gap-4">
                         {user ? (
                             <>
-                                <Link to="/dashboard" className="text-sm font-medium p-2 hover:bg-white/5 rounded-lg">
-                                    Dashboard
-                                </Link>
-                                <Link to="/learn" className="text-sm font-medium p-2 hover:bg-white/5 rounded-lg">
-                                    Learn
-                                </Link>
+                                {user.role === 'admin' ? (
+                                    <Link to="/admin/dashboard" className="text-sm font-medium p-2 hover:bg-white/5 rounded-lg">
+                                        Admin Dashboard
+                                    </Link>
+                                ) : (
+                                    <>
+                                        <Link to="/dashboard" className="text-sm font-medium p-2 hover:bg-white/5 rounded-lg">
+                                            Dashboard
+                                        </Link>
+                                        <Link to="/learn" className="text-sm font-medium p-2 hover:bg-white/5 rounded-lg">
+                                            Learn
+                                        </Link>
+                                    </>
+                                )}
                                 <button onClick={logout} className="text-sm font-medium p-2 hover:bg-white/5 rounded-lg text-left text-destructive">
                                     Log Out
                                 </button>
                             </>
                         ) : (
                             <>
-                                <Link to="/admin/login" className="text-sm font-medium p-2 hover:bg-white/5 rounded-lg">
-                                    Admin Portal
-                                </Link>
                                 <Link to="/login" className="text-sm font-medium p-2 hover:bg-white/5 rounded-lg">
-                                    Log In
+                                    Student Login
+                                </Link>
+                                <Link to="/admin/login" className="text-sm font-medium p-2 hover:bg-white/5 rounded-lg">
+                                    Admin Login
                                 </Link>
                                 <Link to="/register" className="text-sm font-medium p-2 hover:bg-white/5 rounded-lg text-primary">
                                     Get Started
