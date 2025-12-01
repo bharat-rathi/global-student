@@ -6,6 +6,7 @@ import { ChevronLeft, BookOpen, Gamepad2, CheckCircle2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { QuizRace } from '../games/QuizRace';
 import { BattleArena } from '../games/BattleArena';
+import { type Difficulty } from '../../data/questions';
 
 type ViewMode = 'story' | 'game';
 type GameType = 'quiz' | 'battle';
@@ -14,6 +15,7 @@ export const TopicView = () => {
     const { subject, topicId } = useParams<{ subject: string; topicId: string }>();
     const [mode, setMode] = useState<ViewMode>('story');
     const [gameType, setGameType] = useState<GameType>('quiz');
+    const [difficulty, setDifficulty] = useState<Difficulty>('easy');
 
     // Mock Data
     const topicTitle = "Arithmetic Operations";
@@ -35,7 +37,27 @@ export const TopicView = () => {
                 </div>
 
                 {/* Controls */}
-                <div className="flex gap-4">
+                <div className="flex gap-4 items-center">
+                    {/* Difficulty Selector (Only visible in game mode) */}
+                    {mode === 'game' && (
+                        <div className="flex bg-white/5 p-1 rounded-lg border border-white/10">
+                            {(['easy', 'medium', 'hard'] as Difficulty[]).map((d) => (
+                                <button
+                                    key={d}
+                                    onClick={() => setDifficulty(d)}
+                                    className={cn(
+                                        "px-3 py-1.5 rounded text-xs font-medium transition-all capitalize",
+                                        difficulty === d
+                                            ? "bg-yellow-500/20 text-yellow-500 border border-yellow-500/50"
+                                            : "text-muted-foreground hover:text-white"
+                                    )}
+                                >
+                                    {d}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
                     {/* Game Selector (Only visible in game mode) */}
                     {mode === 'game' && (
                         <div className="flex bg-white/5 p-1 rounded-lg border border-white/10">
@@ -122,7 +144,11 @@ export const TopicView = () => {
                         </div>
                     ) : (
                         <div className="h-full">
-                            {gameType === 'quiz' ? <QuizRace /> : <BattleArena />}
+                            {gameType === 'quiz' ? (
+                                <QuizRace subject={subject} topicId={topicId} difficulty={difficulty} />
+                            ) : (
+                                <BattleArena subject={subject} topicId={topicId} difficulty={difficulty} />
+                            )}
                         </div>
                     )}
                 </CardContent>

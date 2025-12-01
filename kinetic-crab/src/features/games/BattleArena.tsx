@@ -1,30 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
-import { Shield, Sword, Heart, Zap, Skull, RotateCcw } from 'lucide-react';
-import { cn } from '../../lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
-
-// Mock Data
-const QUESTIONS = [
-    { id: 1, question: "Solve for x: 2x = 10", options: ["2", "5", "10", "20"], answer: 1, damage: 20 },
-    { id: 2, question: "What is the square root of 64?", options: ["6", "7", "8", "9"], answer: 2, damage: 25 },
-    { id: 3, question: "12 x 12 = ?", options: ["124", "144", "164", "122"], answer: 1, damage: 30 },
-    { id: 4, question: "What is 50% of 80?", options: ["40", "20", "60", "30"], answer: 0, damage: 25 },
-    { id: 5, question: "Solve: 3 + 4 x 2", options: ["14", "11", "10", "24"], answer: 1, damage: 35 }, // PEMDAS trap
-];
+import { Shield, Sword, Skull, RotateCcw, AlertCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { getQuestions, type Question, type Difficulty } from '../../data/questions';
+import { useProgressStore } from '../../store/useProgressStore';
 
 const MAX_HEALTH = 100;
 
-export const BattleArena = () => {
-    const [gameState, setGameState] = useState<'start' | 'playing' | 'won' | 'lost'>('start');
+interface BattleArenaProps {
+    subject?: string;
+    topicId?: string;
+    difficulty?: Difficulty;
+}
+
+export const BattleArena = ({ subject = 'math', topicId = 'm1', difficulty }: BattleArenaProps) => {
+    const { addXp, completeTopic, unlockAchievement } = useProgressStore();
+    const [questions, setQuestions] = useState<Question[]>([]);
+    const [gameState, setGameState] = useState<'loading' | 'start' | 'playing' | 'won' | 'lost'>('loading');
     const [playerHealth, setPlayerHealth] = useState(MAX_HEALTH);
     const [enemyHealth, setEnemyHealth] = useState(MAX_HEALTH);
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [combatLog, setCombatLog] = useState<string[]>([]);
     const [isAttacking, setIsAttacking] = useState<'player' | 'enemy' | null>(null);
 
+    useEffect(() => {
+        const loadedQuestions = getQuestions(subject, topicId, difficulty);
+        // Shuffle and pick 10 for the battle
+        const shuffled = [...loadedQuestions].sort(() => Math.random() - 0.5).slice(0, 10);
+        setQuestions(shuffled);
+        setGameState('start');
+    }, [subject, topicId, difficulty]);
+
     const startGame = () => {
+        if (questions.length === 0) return;
         setGameState('playing');
         setPlayerHealth(MAX_HEALTH);
         setEnemyHealth(MAX_HEALTH);
@@ -36,8 +45,9 @@ export const BattleArena = () => {
     const handleAnswer = (index: number) => {
         if (isAttacking) return;
 
-        const correct = index === QUESTIONS[currentQuestion].answer;
-        const damage = QUESTIONS[currentQuestion].damage;
+        const correct = index === questions[currentQuestion].answer;
+        // Calculate damage based on difficulty if available, else default
+        const damage = 20; // Standard damage
 
         if (correct) {
             // Player Turn
@@ -50,7 +60,7 @@ export const BattleArena = () => {
 
                 // Check Win
                 if (enemyHealth - damage <= 0) {
-                    setGameState('won');
+                    handleWin();
                 } else {
                     nextQuestion();
                 }
@@ -76,7 +86,7 @@ export const BattleArena = () => {
     };
 
     const nextQuestion = () => {
-        if (currentQuestion < QUESTIONS.length - 1) {
+        if (currentQuestion < questions.length - 1) {
             setCurrentQuestion(prev => prev + 1);
         } else {
             // Ran out of questions - if enemy still alive, maybe draw or sudden death? 
@@ -84,6 +94,28 @@ export const BattleArena = () => {
             if (enemyHealth > 0) setGameState('lost');
         }
     };
+
+    const handleWin = () => {
+        setGameState('won');
+        const xpEarned = 100 + (playerHealth / 2); // Bonus for remaining health
+        addXp(Math.floor(xpEarned));
+        completeTopic(topicId, Math.floor(xpEarned));
+        unlockAchievement('first_win');
+    };
+
+    if (gameState === 'loading') {
+        return <div className="flex items-center justify-center h-full">Loading Battle...</div>;
+    }
+
+    if (questions.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full space-y-4 text-center">
+                <AlertCircle className="w-12 h-12 text-yellow-500" />
+                <h3 className="text-xl font-bold">No Questions Found</h3>
+                <p className="text-muted-foreground">Try selecting a different topic or difficulty.</p>
+            </div>
+        );
+    }
 
     if (gameState === 'start') {
         return (
@@ -131,6 +163,8 @@ export const BattleArena = () => {
             </div>
         );
     }
+
+    const q = questions[currentQuestion];
 
     return (
         <div className="h-full flex flex-col max-w-5xl mx-auto p-4 md:p-8 gap-8">
@@ -232,10 +266,10 @@ export const BattleArena = () => {
                 {/* Question & Options */}
                 <div className="col-span-1 md:col-span-2 space-y-6">
                     <div className="text-center">
-                        <h3 className="text-2xl font-bold">{QUESTIONS[currentQuestion].question}</h3>
+                        <h3 className="text-2xl font-bold">{q.question}</h3>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        {QUESTIONS[currentQuestion].options.map((option, index) => (
+                        {q.options.map((option, index) => (
                             <Button
                                 key={index}
                                 variant="secondary"

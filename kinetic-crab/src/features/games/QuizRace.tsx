@@ -1,27 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '../../components/ui/Button';
-import { Card } from '../../components/ui/Card';
-import { Timer, Zap, CheckCircle, XCircle, Trophy, RotateCcw } from 'lucide-react';
+import { Timer, Zap, CheckCircle, XCircle, Trophy, RotateCcw, AlertCircle } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { getQuestions, type Question, type Difficulty } from '../../data/questions';
+import { useProgressStore } from '../../store/useProgressStore';
 
-// Mock Question Data
-const QUESTIONS = [
-    { id: 1, question: "What is 5 + 7?", options: ["10", "11", "12", "13"], answer: 2 },
-    { id: 2, question: "What is 15 - 6?", options: ["8", "9", "7", "10"], answer: 1 },
-    { id: 3, question: "What is 3 x 4?", options: ["12", "9", "15", "7"], answer: 0 },
-    { id: 4, question: "What is 20 / 5?", options: ["5", "2", "10", "4"], answer: 3 },
-    { id: 5, question: "What is 8 + 8?", options: ["16", "18", "14", "12"], answer: 0 },
-];
+interface QuizRaceProps {
+    subject?: string;
+    topicId?: string;
+    difficulty?: Difficulty;
+    onComplete?: (score: number) => void;
+}
 
-export const QuizRace = () => {
-    const [gameState, setGameState] = useState<'start' | 'playing' | 'finished'>('start');
+export const QuizRace = ({ subject = 'math', topicId = 'm1', difficulty, onComplete }: QuizRaceProps) => {
+    const { addXp, completeTopic, unlockAchievement } = useProgressStore();
+    const [questions, setQuestions] = useState<Question[]>([]);
+    const [gameState, setGameState] = useState<'loading' | 'start' | 'playing' | 'finished'>('loading');
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [score, setScore] = useState(0);
     const [streak, setStreak] = useState(0);
     const [timeLeft, setTimeLeft] = useState(30);
     const [selectedOption, setSelectedOption] = useState<number | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        const loadedQuestions = getQuestions(subject, topicId, difficulty);
+        // Shuffle questions for variety
+        const shuffled = [...loadedQuestions].sort(() => Math.random() - 0.5).slice(0, 10);
+        setQuestions(shuffled);
+        setGameState('start');
+    }, [subject, topicId, difficulty]);
 
     useEffect(() => {
         let timer: any;
@@ -36,6 +45,7 @@ export const QuizRace = () => {
     }, [gameState, timeLeft, selectedOption]);
 
     const startGame = () => {
+        if (questions.length === 0) return;
         setGameState('playing');
         setCurrentQuestion(0);
         setScore(0);
@@ -49,7 +59,7 @@ export const QuizRace = () => {
         if (selectedOption !== null) return; // Prevent multiple clicks
 
         setSelectedOption(index);
-        const correct = index === QUESTIONS[currentQuestion].answer;
+        const correct = index === questions[currentQuestion].answer;
         setIsCorrect(correct);
 
         if (correct) {
@@ -61,16 +71,45 @@ export const QuizRace = () => {
 
         // Wait before next question
         setTimeout(() => {
-            if (currentQuestion < QUESTIONS.length - 1) {
+            if (currentQuestion < questions.length - 1) {
                 setCurrentQuestion((prev) => prev + 1);
                 setSelectedOption(null);
                 setIsCorrect(null);
                 setTimeLeft(30);
             } else {
-                setGameState('finished');
+                finishGame();
             }
         }, 1500);
     };
+
+    const finishGame = () => {
+        setGameState('finished');
+
+        // Save Progress
+        addXp(score);
+        completeTopic(topicId, score);
+
+        // Check Achievements
+        unlockAchievement('first_win');
+        if (streak >= 7) unlockAchievement('streak_master');
+        if (subject === 'math' && score >= questions.length * 10) unlockAchievement('math_whiz');
+
+        if (onComplete) onComplete(score);
+    };
+
+    if (gameState === 'loading') {
+        return <div className="flex items-center justify-center h-full">Loading Questions...</div>;
+    }
+
+    if (questions.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full space-y-4 text-center">
+                <AlertCircle className="w-12 h-12 text-yellow-500" />
+                <h3 className="text-xl font-bold">No Questions Found</h3>
+                <p className="text-muted-foreground">Try selecting a different topic or difficulty.</p>
+            </div>
+        );
+    }
 
     if (gameState === 'start') {
         return (
@@ -80,7 +119,10 @@ export const QuizRace = () => {
                 </div>
                 <div>
                     <h2 className="text-4xl font-bold mb-2">Quiz Race</h2>
-                    <p className="text-muted-foreground text-lg">Answer as fast as you can! Build streaks for bonus points.</p>
+                    <p className="text-muted-foreground text-lg">
+                        {questions.length} Questions • {difficulty ? difficulty.toUpperCase() : 'MIXED'} Difficulty
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-2">Answer fast for streak bonuses!</p>
                 </div>
                 <Button size="lg" className="text-lg px-12 py-6 rounded-xl" onClick={startGame}>
                     Start Race
@@ -102,7 +144,7 @@ export const QuizRace = () => {
                     <div className="flex justify-between items-center text-lg">
                         <span className="text-muted-foreground">Accuracy</span>
                         <span className="font-bold text-2xl text-green-500">
-                            {Math.round((score / (QUESTIONS.length * 10)) * 100)}%
+                            {Math.round((score / (questions.length * 10)) * 100)}%
                         </span>
                     </div>
                 </div>
@@ -117,6 +159,8 @@ export const QuizRace = () => {
             </div>
         );
     }
+
+    const q = questions[currentQuestion];
 
     return (
         <div className="h-full flex flex-col max-w-4xl mx-auto p-8">
@@ -140,15 +184,15 @@ export const QuizRace = () => {
             <div className="flex-1 flex flex-col justify-center space-y-8">
                 <div className="text-center space-y-4">
                     <span className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
-                        Question {currentQuestion + 1} of {QUESTIONS.length}
+                        Question {currentQuestion + 1} of {questions.length}
                     </span>
                     <h3 className="text-4xl font-bold leading-tight">
-                        {QUESTIONS[currentQuestion].question}
+                        {q.question}
                     </h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {QUESTIONS[currentQuestion].options.map((option, index) => (
+                    {q.options.map((option, index) => (
                         <button
                             key={index}
                             onClick={() => handleAnswer(index)}
@@ -161,7 +205,7 @@ export const QuizRace = () => {
                                         ? isCorrect
                                             ? "border-green-500 bg-green-500/20 text-green-500"
                                             : "border-red-500 bg-red-500/20 text-red-500"
-                                        : index === QUESTIONS[currentQuestion].answer && selectedOption !== null
+                                        : index === q.answer && selectedOption !== null
                                             ? "border-green-500 bg-green-500/20 text-green-500 opacity-100" // Show correct answer if wrong
                                             : "border-white/5 bg-white/5 opacity-50"
                             )}
@@ -184,7 +228,7 @@ export const QuizRace = () => {
                 <motion.div
                     className="h-full bg-primary"
                     initial={{ width: 0 }}
-                    animate={{ width: `${((currentQuestion) / QUESTIONS.length) * 100}%` }}
+                    animate={{ width: `${((currentQuestion) / questions.length) * 100}%` }}
                     transition={{ duration: 0.5 }}
                 />
             </div>
