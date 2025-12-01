@@ -27,7 +27,7 @@ export const StudentDashboard = () => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
-                        Welcome back, {user?.name.split(' ')[0]}! 👋
+                        Welcome back, {user?.firstName}! 👋
                     </h1>
                     <p className="text-muted-foreground mt-1">Ready to learn something new today?</p>
                 </div>
