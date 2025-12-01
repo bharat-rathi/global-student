@@ -43,10 +43,13 @@ Vercel is the creators of Next.js and provides zero-config support for Vite apps
 3.  **Import** your GitHub repository.
 4.  **Configure Project**:
     *   **Framework Preset**: Vercel should automatically detect `Vite`.
-    *   **Root Directory**: `./` (default)
+    *   **Root Directory**: `kinetic-crab` (IMPORTANT: Click "Edit" and select the folder!)
     *   **Build Command**: `npm run build` (default)
     *   **Output Directory**: `dist` (default)
 5.  Click **Deploy**.
+
+> [!IMPORTANT]
+> **Root Directory Setting**: Since the code is in a subfolder on GitHub, you **MUST** set the **Root Directory** to `kinetic-crab`. If you miss this during import, go to **Settings > General > Root Directory** to fix it.
 
 > **Note**: If you encounter 404 errors on refresh, create a `vercel.json` file in the root:
 > ```json

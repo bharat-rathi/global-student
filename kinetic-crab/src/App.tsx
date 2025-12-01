@@ -8,6 +8,8 @@ import { ParentDashboard } from './features/dashboard/ParentDashboard';
 import { StudentDashboard } from './features/dashboard/StudentDashboard';
 import { TopicList } from './features/learn/TopicList';
 import { TopicView } from './features/learn/TopicView';
+import { AdminLogin } from './features/admin/AdminLogin';
+import { AdminDashboard } from './features/admin/AdminDashboard';
 
 // Placeholders
 const LandingPage = () => (
@@ -34,8 +36,10 @@ function App() {
           <Route path="learn/:subject/:topicId" element={<TopicView />} />
           <Route path="parent/verify" element={<ParentVerify />} />
           <Route path="parent/dashboard" element={<ParentDashboard />} />
+          <Route path="admin/dashboard" element={<AdminDashboard />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
+        <Route path="/admin/login" element={<AdminLogin />} />
       </Routes>
     </BrowserRouter>
   );
