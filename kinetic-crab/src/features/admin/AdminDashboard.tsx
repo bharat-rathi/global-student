@@ -144,6 +144,10 @@ export const AdminDashboard = () => {
                     </Card>
                 </div>
             </div>
+            {/* Version Indicator */}
+            <div className="text-center text-slate-600 text-xs mt-8">
+                v1.1.0 (Gemini Flash Update)
+            </div>
         </div>
     );
 };
