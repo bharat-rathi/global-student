@@ -5,6 +5,7 @@ import { cn } from '../../lib/utils';
 import { motion } from 'framer-motion';
 import { getQuestions, type Question, type Difficulty } from '../../data/questions';
 import { useProgressStore } from '../../store/useProgressStore';
+import { useQuestionStore } from '../../store/useQuestionStore';
 
 interface QuizRaceProps {
     subject?: string;
@@ -15,6 +16,8 @@ interface QuizRaceProps {
 
 export const QuizRace = ({ subject = 'math', topicId = 'm1', difficulty, onComplete }: QuizRaceProps) => {
     const { addXp, completeTopic, unlockAchievement } = useProgressStore();
+    const { customQuestions } = useQuestionStore();
+
     const [questions, setQuestions] = useState<Question[]>([]);
     const [gameState, setGameState] = useState<'loading' | 'start' | 'playing' | 'finished'>('loading');
     const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -25,12 +28,22 @@ export const QuizRace = ({ subject = 'math', topicId = 'm1', difficulty, onCompl
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 
     useEffect(() => {
-        const loadedQuestions = getQuestions(subject, topicId, difficulty);
-        // Shuffle questions for variety
-        const shuffled = [...loadedQuestions].sort(() => Math.random() - 0.5).slice(0, 10);
+        // Get default questions
+        const defaultQuestions = getQuestions(subject, topicId, difficulty);
+
+        // Filter custom questions for this subject/topic
+        // (For prototype, we'll include all custom questions if subject matches, or just mix them in)
+        const relevantCustomQuestions = customQuestions.filter(q =>
+            q.subject === subject && (topicId ? q.topicId === topicId : true)
+        );
+
+        // Combine and shuffle
+        const allQuestions = [...defaultQuestions, ...relevantCustomQuestions];
+        const shuffled = allQuestions.sort(() => Math.random() - 0.5).slice(0, 10);
+
         setQuestions(shuffled);
         setGameState('start');
-    }, [subject, topicId, difficulty]);
+    }, [subject, topicId, difficulty, customQuestions]);
 
     useEffect(() => {
         let timer: any;
@@ -59,6 +72,8 @@ export const QuizRace = ({ subject = 'math', topicId = 'm1', difficulty, onCompl
         if (selectedOption !== null) return; // Prevent multiple clicks
 
         setSelectedOption(index);
+
+        // Handle timeout (-1)
         const correct = index === questions[currentQuestion].answer;
         setIsCorrect(correct);
 

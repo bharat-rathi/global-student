@@ -1,14 +1,19 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '../../components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/Card';
-import { Upload, FileText, CheckCircle, AlertCircle, X } from 'lucide-react';
+import { Upload, FileText, CheckCircle, AlertCircle, X, Loader2, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuestionStore } from '../../store/useQuestionStore';
+import { generateQuestionsFromText } from '../../lib/gemini';
 
 export const CurriculumUpload = () => {
     const [isDragging, setIsDragging] = useState(false);
     const [file, setFile] = useState<File | null>(null);
-    const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+    const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'processing' | 'success' | 'error'>('idle');
+    const [errorMessage, setErrorMessage] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const { apiKey, addQuestions } = useQuestionStore();
 
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
@@ -23,11 +28,12 @@ export const CurriculumUpload = () => {
         e.preventDefault();
         setIsDragging(false);
         const droppedFile = e.dataTransfer.files[0];
-        if (droppedFile && (droppedFile.type === 'application/pdf' || droppedFile.name.endsWith('.docx'))) {
+        if (droppedFile && (droppedFile.type === 'text/plain' || droppedFile.name.endsWith('.txt'))) {
             setFile(droppedFile);
             setUploadStatus('idle');
+            setErrorMessage('');
         } else {
-            alert('Please upload a PDF or DOCX file.');
+            setErrorMessage('For this prototype, please upload .txt files only.');
         }
     };
 
@@ -35,23 +41,44 @@ export const CurriculumUpload = () => {
         if (e.target.files && e.target.files[0]) {
             setFile(e.target.files[0]);
             setUploadStatus('idle');
+            setErrorMessage('');
         }
     };
 
-    const handleUpload = () => {
+    const handleUpload = async () => {
         if (!file) return;
+        if (!apiKey) {
+            setErrorMessage('Please save your Gemini API Key above first.');
+            return;
+        }
 
         setUploadStatus('uploading');
 
-        // Simulate upload delay
-        setTimeout(() => {
+        try {
+            // Read file content
+            const text = await file.text();
+
+            setUploadStatus('processing');
+
+            // Generate questions
+            const newQuestions = await generateQuestionsFromText(apiKey, text);
+
+            // Save to store
+            addQuestions(newQuestions);
+
             setUploadStatus('success');
+
             // Reset after 3 seconds
             setTimeout(() => {
                 setFile(null);
                 setUploadStatus('idle');
             }, 3000);
-        }, 2000);
+
+        } catch (error) {
+            console.error(error);
+            setUploadStatus('error');
+            setErrorMessage(error instanceof Error ? error.message : 'Failed to process file');
+        }
     };
 
     return (
@@ -62,7 +89,7 @@ export const CurriculumUpload = () => {
                     Upload Curriculum
                 </CardTitle>
                 <CardDescription>
-                    Update the learning materials by uploading new documents (PDF, DOCX).
+                    Upload a text file (.txt) to automatically generate game questions using AI.
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -85,7 +112,7 @@ export const CurriculumUpload = () => {
                             type="file"
                             ref={fileInputRef}
                             className="hidden"
-                            accept=".pdf,.docx"
+                            accept=".txt"
                             onChange={handleFileSelect}
                         />
 
@@ -98,11 +125,18 @@ export const CurriculumUpload = () => {
                                     {isDragging ? 'Drop file here' : 'Click or drag file to upload'}
                                 </p>
                                 <p className="text-sm text-muted-foreground mt-1">
-                                    Supports PDF and DOCX (Max 10MB)
+                                    Supports .txt files (Max 30KB text)
                                 </p>
                             </div>
                         </div>
                     </div>
+
+                    {errorMessage && (
+                        <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+                            <AlertCircle className="w-4 h-4" />
+                            {errorMessage}
+                        </div>
+                    )}
 
                     {/* File Preview & Status */}
                     <AnimatePresence>
@@ -121,7 +155,7 @@ export const CurriculumUpload = () => {
                                         <div>
                                             <p className="font-medium text-white">{file.name}</p>
                                             <p className="text-xs text-muted-foreground">
-                                                {(file.size / 1024 / 1024).toFixed(2)} MB
+                                                {(file.size / 1024).toFixed(2)} KB
                                             </p>
                                         </div>
                                     </div>
@@ -140,7 +174,7 @@ export const CurriculumUpload = () => {
                                     {uploadStatus === 'success' && (
                                         <div className="flex items-center gap-2 text-green-400">
                                             <CheckCircle className="w-5 h-5" />
-                                            <span className="text-sm font-medium">Uploaded</span>
+                                            <span className="text-sm font-medium">Generated!</span>
                                         </div>
                                     )}
                                 </div>
@@ -148,22 +182,18 @@ export const CurriculumUpload = () => {
                                 {uploadStatus === 'idle' && (
                                     <div className="mt-4 flex justify-end">
                                         <Button onClick={handleUpload} className="bg-blue-600 hover:bg-blue-700">
-                                            Upload Document
+                                            <Sparkles className="w-4 h-4 mr-2" />
+                                            Generate Questions
                                         </Button>
                                     </div>
                                 )}
 
-                                {uploadStatus === 'uploading' && (
+                                {(uploadStatus === 'uploading' || uploadStatus === 'processing') && (
                                     <div className="mt-4 space-y-2">
-                                        <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                                            <motion.div
-                                                className="h-full bg-blue-500"
-                                                initial={{ width: "0%" }}
-                                                animate={{ width: "100%" }}
-                                                transition={{ duration: 2 }}
-                                            />
+                                        <div className="flex items-center justify-center gap-2 text-sm text-blue-400">
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            {uploadStatus === 'uploading' ? 'Reading file...' : 'AI Generating Questions...'}
                                         </div>
-                                        <p className="text-xs text-center text-muted-foreground">Uploading...</p>
                                     </div>
                                 )}
                             </motion.div>

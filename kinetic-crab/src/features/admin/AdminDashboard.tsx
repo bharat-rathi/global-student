@@ -1,11 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useQuestionStore } from '../../store/useQuestionStore';
 import { CurriculumUpload } from './CurriculumUpload';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
-import { Users, BookOpen, Activity, Settings } from 'lucide-react';
+import { Input } from '../../components/ui/Input';
+import { Button } from '../../components/ui/Button';
+import { Users, BookOpen, Activity, Settings, Key } from 'lucide-react';
 
 export const AdminDashboard = () => {
     const { user } = useAuthStore();
+    const { apiKey, setApiKey } = useQuestionStore();
+    const [tempKey, setTempKey] = useState(apiKey || '');
+    const [isKeySaved, setIsKeySaved] = useState(!!apiKey);
+
+    const handleSaveKey = () => {
+        setApiKey(tempKey);
+        setIsKeySaved(true);
+    };
 
     return (
         <div className="space-y-8 pb-8">
@@ -64,6 +75,42 @@ export const AdminDashboard = () => {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* API Key Configuration */}
+            <Card className="bg-slate-900/50 border-slate-700">
+                <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                        <Key className="w-5 h-5 text-yellow-400" />
+                        AI Configuration
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex gap-4 items-end">
+                        <div className="flex-1">
+                            <Input
+                                label="Gemini API Key"
+                                type="password"
+                                placeholder="Enter your Gemini API Key"
+                                value={tempKey}
+                                onChange={(e) => {
+                                    setTempKey(e.target.value);
+                                    setIsKeySaved(false);
+                                }}
+                            />
+                        </div>
+                        <Button
+                            onClick={handleSaveKey}
+                            disabled={isKeySaved || !tempKey}
+                            className={isKeySaved ? "bg-green-600" : "bg-blue-600"}
+                        >
+                            {isKeySaved ? "Saved" : "Save Key"}
+                        </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                        Required for generating questions from curriculum files. Keys are stored locally in your browser.
+                    </p>
+                </CardContent>
+            </Card>
 
             {/* Main Content Area */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
