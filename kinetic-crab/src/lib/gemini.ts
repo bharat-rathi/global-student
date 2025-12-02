@@ -3,7 +3,8 @@ import type { Question } from '../data/questions';
 
 export const generateQuestionsFromText = async (apiKey: string, text: string): Promise<Question[]> => {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    // Use gemini-1.5-flash as it is faster and more reliable for free tier
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     const prompt = `
         You are an expert educational content creator. 
@@ -44,8 +45,10 @@ export const generateQuestionsFromText = async (apiKey: string, text: string): P
             ...q,
             id: `ai-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
         }));
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error generating questions:', error);
-        throw new Error('Failed to generate questions. Please check your API key and try again.');
+        // Return the actual error message from the API to help debugging
+        const errorMessage = error?.message || error?.toString() || 'Unknown error';
+        throw new Error(`Gemini API Error: ${errorMessage}`);
     }
 };
