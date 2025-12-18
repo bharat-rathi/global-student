@@ -24,6 +24,7 @@ export const nameSchema = z
 
 export const studentRegistrationSchema = z.object({
     username: usernameSchema,
+    email: z.string().email('Invalid email address'),
     password: passwordSchema,
     confirmPassword: z.string(),
     firstName: nameSchema,
@@ -43,7 +44,7 @@ export const studentRegistrationSchema = z.object({
 });
 
 export const loginSchema = z.object({
-    username: z.string().min(1, 'Username is required'),
+    email: z.string().email('Invalid email address'),
     password: z.string().min(1, 'Password is required'),
     rememberMe: z.boolean().optional(),
 });

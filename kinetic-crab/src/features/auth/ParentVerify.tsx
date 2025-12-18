@@ -11,6 +11,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { passwordSchema } from '../../lib/validation';
 
 const parentSetupSchema = z.object({
+    email: z.string().email(),
     password: passwordSchema,
     confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -24,7 +25,7 @@ export const ParentVerify = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const studentName = searchParams.get('student') || 'your child';
-    const { login } = useAuthStore();
+    const { register: registerUser } = useAuthStore();
 
     const {
         register,
@@ -35,19 +36,16 @@ export const ParentVerify = () => {
     });
 
     const onSubmit = async (data: ParentSetupData) => {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-
-        // Auto-login parent
-        login({
-            id: 'parent-1',
-            username: 'parent@example.com',
-            role: 'parent',
-            firstName: 'Parent',
-            lastName: 'User',
-        });
-
-        navigate('/parent/dashboard');
+        try {
+            await registerUser(data.email, data.password, { 
+                role: 'parent',
+                firstName: 'Parent',
+                lastName: 'User'
+            });
+            navigate('/parent/dashboard');
+        } catch(e) {
+            console.error(e);
+        }
     };
 
     return (
@@ -68,6 +66,13 @@ export const ParentVerify = () => {
                     </div>
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                        <Input
+                            label="Your Email"
+                            placeholder="parent@example.com"
+                            icon={<Mail className="w-4 h-4" />}
+                            error={errors.email?.message}
+                            {...register('email')}
+                        />
                         <Input
                             label="Set Your Password"
                             type="password"

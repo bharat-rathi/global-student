@@ -10,7 +10,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Lock, ShieldCheck } from 'lucide-react';
 
 const adminLoginSchema = z.object({
-    username: z.string().min(1, "Admin ID is required"),
+    email: z.string().email("Invalid email address"),
     password: z.string().min(1, "Password is required"),
 });
 
@@ -19,25 +19,26 @@ type AdminLoginForm = z.infer<typeof adminLoginSchema>;
 export const AdminLogin = () => {
     const navigate = useNavigate();
     const login = useAuthStore((state) => state.login);
+    // Use state to expose internal details if needed, for now using direct login
 
     const { register, handleSubmit, formState: { errors, isSubmitting }, setError } = useForm<AdminLoginForm>({
         resolver: zodResolver(adminLoginSchema),
     });
 
     const onSubmit = async (data: AdminLoginForm) => {
-        // Mock Admin Authentication
-        if (data.username === 'admin' && data.password === 'admin123') {
-            login({
-                id: 'admin-1',
-                username: 'admin',
-                role: 'admin',
-                firstName: 'Admin',
-                lastName: 'User',
-            });
+        try {
+            await login(data.email, data.password);
+            // Check role is admin handled by store logic or RLS? 
+            // The store sets the user. We should verify role here or redirect.
+            // The store fetches profile.role.
+            const user = useAuthStore.getState().user;
+            if (user?.role !== 'admin') {
+               throw new Error('Access Denied: Not an admin account');
+            }
             navigate('/admin/dashboard');
-        } else {
+        } catch (error: any) {
             setError('root', {
-                message: 'Invalid Admin ID or Password'
+                message: error.message || 'Invalid Email or Password'
             });
         }
     };
@@ -55,11 +56,11 @@ export const AdminLogin = () => {
                 <CardContent>
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                         <Input
-                            label="Admin ID"
+                            label="Admin Email"
                             icon={<ShieldCheck className="w-4 h-4" />}
-                            placeholder="Enter your admin ID"
-                            error={errors.username?.message}
-                            {...register('username')}
+                            placeholder="admin@globalstudent.com"
+                            error={errors.email?.message}
+                            {...register('email')}
                         />
                         <Input
                             label="Password"

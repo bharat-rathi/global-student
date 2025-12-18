@@ -11,7 +11,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 
 export const StudentRegister = () => {
     const navigate = useNavigate();
-    const { login } = useAuthStore();
+    const { register: registerUser } = useAuthStore();
     const [isSubmitted, setIsSubmitted] = React.useState(false);
 
     const {
@@ -28,11 +28,21 @@ export const StudentRegister = () => {
     });
 
     const onSubmit = async (data: StudentRegistrationData) => {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        console.log('Registration data:', data);
-        setIsSubmitted(true);
-        // In a real app, we'd send verification email here
+        try {
+            await registerUser(data.email, data.password, {
+                username: data.username,
+                firstName: data.firstName,
+                lastName: data.lastName,
+                gradeLevel: data.gradeLevel,
+                parentEmail: data.parentEmail,
+                dateOfBirth: data.dateOfBirth,
+                role: 'student'
+            });
+            setIsSubmitted(true);
+        } catch (error) {
+            console.error('Registration failed:', error);
+            // In a real app, handle error UI here
+        }
     };
 
     if (isSubmitted) {
@@ -131,6 +141,14 @@ export const StudentRegister = () => {
                                     icon={<User className="w-4 h-4" />}
                                     error={errors.username?.message}
                                     {...register('username')}
+                                />
+                                <Input
+                                    label="Student Email"
+                                    type="email"
+                                    placeholder="student@example.com"
+                                    icon={<Mail className="w-4 h-4" />}
+                                    error={errors.email?.message}
+                                    {...register('email')}
                                 />
                                 <Input
                                     label="Password"

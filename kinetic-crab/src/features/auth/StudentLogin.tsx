@@ -24,21 +24,11 @@ export const StudentLogin = () => {
 
     const onSubmit = async (data: LoginData) => {
         setLoginError(null);
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // Mock login success
-        if (data.username.toLowerCase() === 'student' && data.password === 'Password123') {
-            login({
-                id: '1',
-                username: data.username,
-                role: 'student',
-                firstName: 'Student',
-                lastName: 'User',
-            });
+        try {
+            await login(data.email, data.password);
             navigate('/dashboard');
-        } else {
-            setLoginError('Invalid username or password');
+        } catch (error: any) {
+            setLoginError(error.message || 'Invalid email or password');
         }
     };
 
@@ -55,11 +45,11 @@ export const StudentLogin = () => {
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                         <div className="space-y-4">
                             <Input
-                                label="Username"
-                                placeholder="Enter your username"
+                                label="Email"
+                                placeholder="Enter your email"
                                 icon={<User className="w-4 h-4" />}
-                                error={errors.username?.message}
-                                {...register('username')}
+                                error={errors.email?.message}
+                                {...register('email')}
                             />
                             <div className="space-y-2">
                                 <Input
@@ -112,11 +102,6 @@ export const StudentLogin = () => {
                             Sign up
                         </Link>
                     </p>
-                    <div className="text-xs text-muted-foreground bg-white/5 p-2 rounded border border-white/10">
-                        <p>Demo Credentials:</p>
-                        <p>User: student</p>
-                        <p>Pass: Password123</p>
-                    </div>
                 </CardFooter>
             </Card>
         </div>
