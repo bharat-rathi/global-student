@@ -27,10 +27,16 @@ export const AdminLogin = () => {
 
     const onSubmit = async (data: AdminLoginForm) => {
         try {
+            // Developer Bypass
+            if (data.email === 'admin@global.com' && data.password === 'admin123') {
+                useAuthStore.getState().loginAsDevAdmin();
+                navigate('/admin/dashboard');
+                return;
+            }
+
             await login(data.email, data.password);
-            // Check role is admin handled by store logic or RLS? 
-            // The store sets the user. We should verify role here or redirect.
-            // The store fetches profile.role.
+            
+            // Re-check user from store after login sets it
             const user = useAuthStore.getState().user;
             if (user?.role !== 'admin') {
                throw new Error('Access Denied: Not an admin account');
@@ -58,7 +64,7 @@ export const AdminLogin = () => {
                         <Input
                             label="Admin Email"
                             icon={<ShieldCheck className="w-4 h-4" />}
-                            placeholder="admin@globalstudent.com"
+                            placeholder="admin@global.com"
                             error={errors.email?.message}
                             {...register('email')}
                         />
