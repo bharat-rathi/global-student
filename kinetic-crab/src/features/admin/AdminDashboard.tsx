@@ -165,7 +165,7 @@ export const AdminDashboard = () => {
             </div>
             {/* Version Indicator */}
             <div className="text-center text-slate-600 text-xs mt-8">
-                v1.5.0 (REST API Diagnostic)
+                v1.6.0 (Gemini 2.0 Upgrade)
             </div>
         </div>
     );
