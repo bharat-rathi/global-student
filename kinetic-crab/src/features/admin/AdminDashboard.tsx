@@ -106,6 +106,25 @@ export const AdminDashboard = () => {
                             {isKeySaved ? "Saved" : "Save Key"}
                         </Button>
                     </div>
+                    {/* Diagnostic Tool */}
+                    <div className="mt-4 border-t border-slate-700 pt-4">
+                        <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={async () => {
+                                try {
+                                    alert('Testing Connection... This may take 10 seconds.');
+                                    const { validateApiKey } = await import('../../lib/gemini');
+                                    const models = await validateApiKey(tempKey);
+                                    alert(`SUCCESS! Working Models: \n${models.join('\n')}`);
+                                } catch (e: any) {
+                                    alert(`ERROR: ${e.message}`);
+                                }
+                            }}
+                        >
+                            Test Connection / Find Models
+                        </Button>
+                    </div>
                     <p className="text-xs text-muted-foreground mt-2">
                         Required for generating questions from curriculum files. Keys are stored locally in your browser.
                     </p>
