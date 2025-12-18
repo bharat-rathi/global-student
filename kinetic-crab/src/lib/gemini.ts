@@ -107,7 +107,16 @@ export const validateApiKey = async (apiKey: string): Promise<string[]> => {
         // Let's try to generate content with a very simple verified model to test auth
         
         // Strategy: Try the 3 most common model names. The one that works confirms the key is good.
-        const candidates = ['gemini-1.5-flash', 'gemini-1.5-flash-001', 'gemini-pro', 'gemini-1.0-pro'];
+        const candidates = [
+            'gemini-1.5-flash', 
+            'gemini-1.5-flash-001', 
+            'gemini-1.5-flash-002',
+            'gemini-1.5-pro',
+            'gemini-1.5-pro-001',
+            'gemini-1.5-pro-002',
+            'gemini-pro', 
+            'gemini-1.0-pro'
+        ];
         const workingModels: string[] = [];
 
         for (const modelName of candidates) {
