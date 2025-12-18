@@ -146,7 +146,7 @@ export const AdminDashboard = () => {
             </div>
             {/* Version Indicator */}
             <div className="text-center text-slate-600 text-xs mt-8">
-                v1.2.0 (Gemini 1.5-001 Fix)
+                v1.3.0 (Gemini Pro Fallback)
             </div>
         </div>
     );
