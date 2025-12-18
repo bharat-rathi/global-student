@@ -52,3 +52,49 @@ export const generateQuestionsFromText = async (apiKey: string, text: string): P
         throw new Error(`Gemini API Error: ${errorMessage}`);
     }
 };
+
+export const generateStory = async (topic: string, gradeLevel: string = "6"): Promise<{ title: string; content: string[] }> => {
+    const apiKey = localStorage.getItem('gemini_api_key');
+    if (!apiKey) {
+        throw new Error("Gemini API Key is missing. Please add it in the Admin Dashboard.");
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const prompt = `
+        Write a short, engaging educational story to teach the concept of "${topic}" to a ${gradeLevel}th grade student.
+        
+        Characters:
+        1. Professor Crab: A wise, enthusiastic teacher who loves science and math.
+        2. The Glitch: A mischievous character who causes confusion or misunderstandings (the problem to be solved).
+
+        Plot:
+        The Glitch has caused trouble related to "${topic}". Professor Crab guides the student (the reader) to fix it by understanding the concept.
+
+        Format:
+        Return ONLY a JSON object with this structure:
+        {
+            "title": "Creative Title Here",
+            "content": ["Paragraph 1", "Paragraph 2", "Paragraph 3"]
+        }
+        Keep it under 200 words total. Make it fun and interactive!
+    `;
+
+    try {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            return JSON.parse(jsonMatch[0]);
+        } else {
+            throw new Error("Invalid response format from AI");
+        }
+    } catch (error: any) {
+        console.error("Gemini Story Error:", error);
+        throw new Error(error.message || "Failed to generate story.");
+    }
+};
+

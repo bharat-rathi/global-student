@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent } from '../../components/ui/Card';
 import { ChevronLeft, BookOpen, Gamepad2, CheckCircle2 } from 'lucide-react';
+import { StoryViewer } from './StoryViewer';
 import { cn } from '../../lib/utils';
 import { QuizRace } from '../games/QuizRace';
 import { BattleArena } from '../games/BattleArena';
@@ -112,36 +113,10 @@ export const TopicView = () => {
             <Card className="flex-1 overflow-hidden border-white/10 bg-black/20 backdrop-blur-xl">
                 <CardContent className="p-0 h-full">
                     {mode === 'story' ? (
-                        <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-8">
-                            <div className="w-full max-w-4xl aspect-video bg-black/50 rounded-xl border border-white/10 flex items-center justify-center relative overflow-hidden group">
-                                {/* Placeholder for Story Video/Comic */}
-                                <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 to-purple-900/20" />
-                                <div className="z-10 space-y-4">
-                                    <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto backdrop-blur-md border border-white/20 group-hover:scale-110 transition-transform cursor-pointer">
-                                        <BookOpen className="w-8 h-8 text-white" />
-                                    </div>
-                                    <p className="text-lg font-medium">Interactive Story Placeholder</p>
-                                    <p className="text-sm text-muted-foreground">"The Tale of the Number Wizard"</p>
-                                </div>
-                            </div>
-
-                            <div className="max-w-2xl space-y-4">
-                                <h2 className="text-2xl font-bold">Concept: Adding & Subtracting</h2>
-                                <p className="text-muted-foreground">
-                                    In this story, we learn how the Number Wizard uses addition to build his tower and subtraction to defend it from the Void Creatures.
-                                </p>
-                                <Button
-                                    size="lg"
-                                    className="gap-2"
-                                    onClick={() => {
-                                        setMode('game');
-                                    }}
-                                >
-                                    <CheckCircle2 className="w-5 h-5" />
-                                    I Understand, Let's Play!
-                                </Button>
-                            </div>
-                        </div>
+                        <StoryViewer 
+                            topic={topicTitle} 
+                            onComplete={() => setMode('game')} 
+                        />
                     ) : (
                         <div className="h-full">
                             {gameType === 'quiz' ? (
