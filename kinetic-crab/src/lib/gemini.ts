@@ -100,42 +100,31 @@ export const generateStory = async (topic: string, gradeLevel: string = "6"): Pr
 
 export const validateApiKey = async (apiKey: string): Promise<string[]> => {
     try {
-        const genAI = new GoogleGenerativeAI(apiKey);
-        // We can't directly list models easily with this SDK version in the browser without a specific call
-        // But we can try to fetch a specific model info or just try a lighter call
-        // Actually, the SDK doesn't expose listModels for the browser client easily due to CORS on some endpoints
-        // Let's try to generate content with a very simple verified model to test auth
+        // Direct REST API call to list models - ultimate truth source
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
         
-        // Strategy: Try the 3 most common model names. The one that works confirms the key is good.
-        const candidates = [
-            'gemini-1.5-flash', 
-            'gemini-1.5-flash-001', 
-            'gemini-1.5-flash-002',
-            'gemini-1.5-pro',
-            'gemini-1.5-pro-001',
-            'gemini-1.5-pro-002',
-            'gemini-pro', 
-            'gemini-1.0-pro'
-        ];
-        const workingModels: string[] = [];
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(`HTTP ${response.status}: ${errorData?.error?.message || response.statusText}`);
+        }
 
-        for (const modelName of candidates) {
-            try {
-                const model = genAI.getGenerativeModel({ model: modelName });
-                await model.generateContent("Test");
-                workingModels.push(modelName);
-            } catch (e: any) {
-                console.log(`Model ${modelName} failed:`, e.message);
-            }
+        const data = await response.json();
+        if (!data.models) {
+            throw new Error("API returned no 'models' list.");
         }
-        
-        if (workingModels.length === 0) {
-           throw new Error("No compatible models found for this API Key.");
+
+        // Filter for generateContent supported models
+        const availableModels = data.models
+            .filter((m: any) => m.supportedGenerationMethods?.includes('generateContent'))
+            .map((m: any) => m.name.replace('models/', ''));
+
+        if (availableModels.length === 0) {
+            throw new Error("Key works, but no generateContent models found.");
         }
-        
-        return workingModels;
+
+        return availableModels;
     } catch (error: any) {
-        throw new Error(`API Validation Failed: ${error.message}`);
+        throw new Error(`Validation Error: ${error.message}`);
     }
 };
 
