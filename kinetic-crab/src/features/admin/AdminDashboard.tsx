@@ -165,7 +165,7 @@ export const AdminDashboard = () => {
             </div>
             {/* Version Indicator */}
             <div className="text-center text-slate-600 text-xs mt-8">
-                v1.6.0 (Gemini 2.0 Upgrade)
+                v1.7.0 (Quota Fix - Exp Model)
             </div>
         </div>
     );

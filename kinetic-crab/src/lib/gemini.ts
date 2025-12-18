@@ -3,8 +3,8 @@ import type { Question } from '../data/questions';
 
 export const generateQuestionsFromText = async (apiKey: string, text: string): Promise<Question[]> => {
     const genAI = new GoogleGenerativeAI(apiKey);
-    // Use gemini-2.0-flash as confirmed by user diagnostics
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    // Use gemini-2.0-flash-exp to avoid strict quota limits on the main channel
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
 
     const prompt = `
         You are an expert educational content creator. 
@@ -60,7 +60,7 @@ export const generateStory = async (topic: string, gradeLevel: string = "6"): Pr
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
     const prompt = `
         Write a short, engaging educational story to teach the concept of "${topic}" to a ${gradeLevel}th grade student.
