@@ -49,7 +49,7 @@ export const generateQuestionsFromText = async (apiKey: string, text: string): P
         console.error('Error generating questions:', error);
         // Return the actual error message from the API to help debugging
         const errorMessage = error?.message || error?.toString() || 'Unknown error';
-        throw new Error(`Gemini API Error: ${errorMessage}`);
+        throw new Error(`Gemini API Error (v1.8 - Exp Model): ${errorMessage}`);
     }
 };
 

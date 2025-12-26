@@ -72,6 +72,18 @@ export const AdminDashboard = () => {
                     <CardContent>
                         <div className="text-2xl font-bold text-green-500">Operational</div>
                         <p className="text-xs text-muted-foreground">All systems normal</p>
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="mt-2 text-xs h-6 px-2 w-full justify-start"
+                            onClick={async () => {
+                                const { checkDatabaseConnection } = await import('../../lib/supabase');
+                                const results = await checkDatabaseConnection();
+                                alert(`Database Status:\n\n${results.join('\n')}`);
+                            }}
+                        >
+                           🔍 Run DB Health Check
+                        </Button>
                     </CardContent>
                 </Card>
             </div>
@@ -165,7 +177,7 @@ export const AdminDashboard = () => {
             </div>
             {/* Version Indicator */}
             <div className="text-center text-slate-600 text-xs mt-8">
-                v1.7.0 (Quota Fix - Exp Model)
+                v1.8.0 (Debug Mode)
             </div>
         </div>
     );
