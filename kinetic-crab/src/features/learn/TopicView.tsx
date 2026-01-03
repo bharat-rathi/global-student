@@ -7,6 +7,7 @@ import { StoryViewer } from './StoryViewer';
 import { cn } from '../../lib/utils';
 import { QuizRace } from '../games/QuizRace';
 import { BattleArena } from '../games/BattleArena';
+import { TOPICS } from '../../data/topics';
 import { type Difficulty } from '../../data/questions';
 
 type ViewMode = 'story' | 'game';
@@ -18,8 +19,10 @@ export const TopicView = () => {
     const [gameType, setGameType] = useState<GameType>('quiz');
     const [difficulty, setDifficulty] = useState<Difficulty>('easy');
 
-    // Mock Data
-    const topicTitle = "Arithmetic Operations";
+    // Find Topic Title
+    const subjectTopics = TOPICS[subject || 'math'] || [];
+    const topic = subjectTopics.find(t => t.id === topicId);
+    const topicTitle = topic?.title || "Unknown Topic";
 
     return (
         <div className="space-y-6 h-[calc(100vh-8rem)] flex flex-col">
@@ -93,7 +96,7 @@ export const TopicView = () => {
                             )}
                         >
                             <BookOpen className="w-4 h-4" />
-                            Story
+                            Lesson
                         </button>
                         <button
                             onClick={() => setMode('game')}
@@ -103,7 +106,7 @@ export const TopicView = () => {
                             )}
                         >
                             <Gamepad2 className="w-4 h-4" />
-                            Game
+                            Practice
                         </button>
                     </div>
                 </div>

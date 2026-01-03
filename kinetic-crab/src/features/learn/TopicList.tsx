@@ -4,22 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../..
 import { Button } from '../../components/ui/Button';
 import { Play, CheckCircle2, Lock, Star } from 'lucide-react';
 import { cn } from '../../lib/utils';
-
-// Mock Data - In real app, fetch from API
-const TOPICS = {
-    math: [
-        { id: 'm1', title: 'Ratios & Proportions', desc: 'Understand relationships between numbers', status: 'completed', stars: 3 },
-        { id: 'm2', title: 'Arithmetic Operations', desc: 'Master addition, subtraction, multiplication, division', status: 'in-progress', stars: 1 },
-        { id: 'm3', title: 'Fractions & Decimals', desc: 'Working with parts of a whole', status: 'locked', stars: 0 },
-        { id: 'm4', title: 'Geometry Basics', desc: 'Points, lines, and angles', status: 'locked', stars: 0 },
-    ],
-    science: [
-        { id: 's1', title: 'Matter & Atoms', desc: 'The building blocks of the universe', status: 'in-progress', stars: 2 },
-        { id: 's2', title: 'Forces & Motion', desc: 'How things move and interact', status: 'locked', stars: 0 },
-        { id: 's3', title: 'Energy Types', desc: 'Kinetic, potential, and thermal energy', status: 'locked', stars: 0 },
-        { id: 's4', title: 'Cells & Life', desc: 'The basic unit of life', status: 'locked', stars: 0 },
-    ]
-};
+import { TOPICS } from '../../data/topics';
 
 export const TopicList = () => {
     const { subject } = useParams<{ subject: 'math' | 'science' }>();
