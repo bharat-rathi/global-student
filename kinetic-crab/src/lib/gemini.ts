@@ -3,13 +3,35 @@ import type { Question } from '../data/questions';
 
 export const generateQuestionsFromText = async (apiKey: string, text: string): Promise<Question[]> => {
     const genAI = new GoogleGenerativeAI(apiKey);
-    // Use gemini-2.0-flash-exp to avoid strict quota limits on the main channel
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+    
+    // Helper to try generation with fallback
+    const generateWithFallback = async (promptText: string) => {
+        const models = ['gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-pro'];
+        let lastError;
+
+        for (const modelName of models) {
+            try {
+                console.log(`Attempting generation with model: ${modelName}`);
+                const model = genAI.getGenerativeModel({ model: modelName });
+                const result = await model.generateContent(promptText);
+                const response = await result.response;
+                return response.text();
+            } catch (error: any) {
+                console.warn(`Model ${modelName} failed:`, error.message);
+                lastError = error;
+                // If quota error (429), continue to next model. 
+                // If 404 (Not Found), continue.
+                // For others, maybe also continue to be safe.
+                continue;
+            }
+        }
+        throw lastError || new Error("All available models failed.");
+    };
 
     const prompt = `
-        You are an expert educational content creator. 
+        You are an expert educational content creator.
         Analyze the following text and generate 5 multiple-choice questions suitable for a Grade 6 student.
-        
+
         The output MUST be a valid JSON array of objects with this exact structure:
         [
             {
@@ -25,16 +47,13 @@ export const generateQuestionsFromText = async (apiKey: string, text: string): P
         ]
 
         Do not include any markdown formatting (like \`\`\`json). Just return the raw JSON array.
-        
+
         Text to analyze:
         ${text.substring(0, 30000)} // Limit text length to avoid token limits
     `;
 
     try {
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const textResponse = response.text();
-
+        const textResponse = await generateWithFallback(prompt);
         // Clean up potential markdown code blocks if Gemini adds them
         const cleanedResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
 
@@ -49,7 +68,7 @@ export const generateQuestionsFromText = async (apiKey: string, text: string): P
         console.error('Error generating questions:', error);
         // Return the actual error message from the API to help debugging
         const errorMessage = error?.message || error?.toString() || 'Unknown error';
-        throw new Error(`Gemini API Error (v1.8 - Exp Model): ${errorMessage}`);
+        throw new Error(`Gemini API Error (All Models Failed): ${errorMessage}`);
     }
 };
 
@@ -60,7 +79,27 @@ export const generateStory = async (topic: string, gradeLevel: string = "6"): Pr
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+    
+    // Fallback logic for story as well
+    const generateWithFallback = async (promptText: string) => {
+        const models = ['gemini-2.0-flash-exp', 'gemini-1.5-flash'];
+        let lastError;
+
+        for (const modelName of models) {
+            try {
+                console.log(`Story generation attempt: ${modelName}`);
+                const model = genAI.getGenerativeModel({ model: modelName });
+                const result = await model.generateContent(promptText);
+                const response = await result.response;
+                return response.text();
+            } catch (error: any) {
+                console.warn(`Story model ${modelName} failed:`, error.message);
+                lastError = error;
+                continue;
+            }
+        }
+        throw lastError;
+    };
 
     const prompt = `
         Write a short, engaging educational story to teach the concept of "${topic}" to a ${gradeLevel}th grade student.
@@ -82,9 +121,7 @@ export const generateStory = async (topic: string, gradeLevel: string = "6"): Pr
     `;
 
     try {
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+        const text = await generateWithFallback(prompt);
         
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
