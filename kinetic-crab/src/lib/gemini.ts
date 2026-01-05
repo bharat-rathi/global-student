@@ -6,8 +6,14 @@ export const generateQuestionsFromText = async (apiKey: string, text: string): P
     
     // Helper to try generation with fallback
     const generateWithFallback = async (promptText: string) => {
-        const models = ['gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-pro'];
-        let lastError;
+        const models = [
+            'gemini-2.0-flash-exp', 
+            'gemini-1.5-flash', 
+            'gemini-1.5-flash-8b',
+            'gemini-1.5-pro',
+            'gemini-1.0-pro'
+        ];
+        const errors: string[] = [];
 
         for (const modelName of models) {
             try {
@@ -17,15 +23,13 @@ export const generateQuestionsFromText = async (apiKey: string, text: string): P
                 const response = await result.response;
                 return response.text();
             } catch (error: any) {
-                console.warn(`Model ${modelName} failed:`, error.message);
-                lastError = error;
-                // If quota error (429), continue to next model. 
-                // If 404 (Not Found), continue.
-                // For others, maybe also continue to be safe.
+                const msg = `Model ${modelName} failed: ${error.message}`;
+                console.warn(msg);
+                errors.push(msg);
                 continue;
             }
         }
-        throw lastError || new Error("All available models failed.");
+        throw new Error(`All models failed:\n${errors.join('\n')}`);
     };
 
     const prompt = `
@@ -82,8 +86,14 @@ export const generateStory = async (topic: string, gradeLevel: string = "6"): Pr
     
     // Fallback logic for story as well
     const generateWithFallback = async (promptText: string) => {
-        const models = ['gemini-2.0-flash-exp', 'gemini-1.5-flash'];
-        let lastError;
+        const models = [
+            'gemini-2.0-flash-exp', 
+            'gemini-1.5-flash', 
+            'gemini-1.5-flash-8b',
+            'gemini-1.5-pro',
+            'gemini-1.0-pro'
+        ];
+        const errors: string[] = [];
 
         for (const modelName of models) {
             try {
@@ -93,12 +103,13 @@ export const generateStory = async (topic: string, gradeLevel: string = "6"): Pr
                 const response = await result.response;
                 return response.text();
             } catch (error: any) {
-                console.warn(`Story model ${modelName} failed:`, error.message);
-                lastError = error;
+                const msg = `Model ${modelName} failed: ${error.message}`;
+                console.warn(msg);
+                errors.push(msg);
                 continue;
             }
         }
-        throw lastError;
+        throw new Error(`All story models failed:\n${errors.join('\n')}`);
     };
 
     const prompt = `
@@ -137,6 +148,7 @@ export const generateStory = async (topic: string, gradeLevel: string = "6"): Pr
 
 export const validateApiKey = async (apiKey: string): Promise<string[]> => {
     try {
+        const genAI = new GoogleGenerativeAI(apiKey);
         // Direct REST API call to list models - ultimate truth source
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
         
@@ -151,15 +163,37 @@ export const validateApiKey = async (apiKey: string): Promise<string[]> => {
         }
 
         // Filter for generateContent supported models
-        const availableModels = data.models
+        const candidates = data.models
             .filter((m: any) => m.supportedGenerationMethods?.includes('generateContent'))
             .map((m: any) => m.name.replace('models/', ''));
 
-        if (availableModels.length === 0) {
+        if (candidates.length === 0) {
             throw new Error("Key works, but no generateContent models found.");
         }
 
-        return availableModels;
+        // Now TEST generation for each candidate (lightweight)
+        const workingModels: string[] = [];
+        const results = await Promise.allSettled(candidates.map(async (modelName: string) => {
+            try {
+                const model = genAI.getGenerativeModel({ model: modelName });
+                await model.generateContent("Hello"); // Minimal cost
+                return modelName;
+            } catch (e) {
+                throw e;
+            }
+        }));
+
+        results.forEach((result, index) => {
+            if (result.status === 'fulfilled') {
+                workingModels.push(result.value as string);
+            }
+        });
+
+        if (workingModels.length === 0) {
+            throw new Error("Key is valid, but ALL models failed generation test (Quotas?).");
+        }
+
+        return workingModels;
     } catch (error: any) {
         throw new Error(`Validation Error: ${error.message}`);
     }
