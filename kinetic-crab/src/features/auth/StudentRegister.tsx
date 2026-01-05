@@ -202,7 +202,17 @@ export const StudentRegister = () => {
                         </Button>
                     </form>
                 </CardContent>
-                <CardFooter className="justify-center">
+                <CardFooter className="justify-center flex-col gap-4">
+                    <Button 
+                        variant="outline" 
+                        onClick={() => {
+                            useAuthStore.getState().loginAsDemoStudent();
+                            navigate('/dashboard');
+                        }}
+                        className="w-full border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+                    >
+                        🚀 Demo Student Login (No Signup)
+                    </Button>
                     <p className="text-sm text-muted-foreground">
                         Already have an account?{' '}
                         <Link to="/login" className="text-primary hover:underline font-medium">
