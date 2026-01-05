@@ -7,11 +7,11 @@ export const generateQuestionsFromText = async (apiKey: string, text: string): P
     // Helper to try generation with fallback
     const generateWithFallback = async (promptText: string) => {
         const models = [
-            'gemini-2.0-flash-exp', 
             'gemini-1.5-flash', 
             'gemini-1.5-flash-8b',
             'gemini-1.5-pro',
-            'gemini-1.0-pro'
+            'gemini-1.0-pro',
+            'gemini-2.0-flash-exp'
         ];
         const errors: string[] = [];
 
@@ -87,11 +87,11 @@ export const generateStory = async (topic: string, gradeLevel: string = "6"): Pr
     // Fallback logic for story as well
     const generateWithFallback = async (promptText: string) => {
         const models = [
-            'gemini-2.0-flash-exp', 
             'gemini-1.5-flash', 
             'gemini-1.5-flash-8b',
             'gemini-1.5-pro',
-            'gemini-1.0-pro'
+            'gemini-1.0-pro',
+            'gemini-2.0-flash-exp'
         ];
         const errors: string[] = [];
 
