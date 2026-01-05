@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { generateStory } from '../../lib/gemini';
+import { generateStory } from '../../lib/ai';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../components/ui/Card';
 import { BookOpen, Sparkles, AlertCircle } from 'lucide-react';

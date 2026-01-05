@@ -1,28 +1,27 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 import type { Question } from '../data/questions';
 
 export const generateQuestionsFromText = async (apiKey: string, text: string): Promise<Question[]> => {
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const groq = new Groq({ apiKey, dangerouslyAllowBrowser: true });
     
-    // Helper to try generation with fallback
+    // Fallback logic for models
     const generateWithFallback = async (promptText: string) => {
         const models = [
-            'gemini-1.5-flash', 
-            'gemini-1.5-flash-8b',
-            'gemini-1.5-pro',
-            'gemini-1.0-pro',
-            'gemini-pro',
-            'gemini-2.0-flash-exp'
+            'llama-3.3-70b-versatile',
+            'llama3-8b-8192',
+            'mixtral-8x7b-32768'
         ];
         const errors: string[] = [];
 
         for (const modelName of models) {
             try {
-                console.log(`Attempting generation with model: ${modelName}`);
-                const model = genAI.getGenerativeModel({ model: modelName });
-                const result = await model.generateContent(promptText);
-                const response = await result.response;
-                return response.text();
+                console.log(`Attempting generation with Groq model: ${modelName}`);
+                const completion = await groq.chat.completions.create({
+                    messages: [{ role: 'user', content: promptText }],
+                    model: modelName,
+                    temperature: 0.5,
+                });
+                return completion.choices[0]?.message?.content || "";
             } catch (error: any) {
                 const msg = `Model ${modelName} failed: ${error.message}`;
                 console.warn(msg);
@@ -30,7 +29,7 @@ export const generateQuestionsFromText = async (apiKey: string, text: string): P
                 continue;
             }
         }
-        throw new Error(`All models failed:\n${errors.join('\n')}`);
+        throw new Error(`All Groq models failed:\n${errors.join('\n')}`);
     };
 
     const prompt = `
@@ -54,12 +53,12 @@ export const generateQuestionsFromText = async (apiKey: string, text: string): P
         Do not include any markdown formatting (like \`\`\`json). Just return the raw JSON array.
 
         Text to analyze:
-        ${text.substring(0, 30000)} // Limit text length to avoid token limits
+        ${text.substring(0, 15000)} // Limit context window
     `;
 
     try {
         const textResponse = await generateWithFallback(prompt);
-        // Clean up potential markdown code blocks if Gemini adds them
+        // Clean up potential markdown code blocks
         const cleanedResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
 
         const questions = JSON.parse(cleanedResponse) as Question[];
@@ -67,43 +66,40 @@ export const generateQuestionsFromText = async (apiKey: string, text: string): P
         // Ensure IDs are unique
         return questions.map(q => ({
             ...q,
-            id: `ai-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+            id: `groq-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
         }));
     } catch (error: any) {
         console.error('Error generating questions:', error);
-        // Return the actual error message from the API to help debugging
-        const errorMessage = error?.message || error?.toString() || 'Unknown error';
-        throw new Error(`Gemini API Error (All Models Failed): ${errorMessage}`);
+        throw new Error(`Groq API Error: ${error.message}`);
     }
 };
 
 export const generateStory = async (topic: string, gradeLevel: string = "6"): Promise<{ title: string; content: string[] }> => {
-    const apiKey = localStorage.getItem('gemini_api_key');
+    const apiKey = localStorage.getItem('gemini_api_key'); // We will keep the key name for now to avoid breaking UI store
     if (!apiKey) {
-        throw new Error("Gemini API Key is missing. Please add it in the Admin Dashboard.");
+        throw new Error("API Key is missing. Please add it in the Admin Dashboard.");
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const groq = new Groq({ apiKey, dangerouslyAllowBrowser: true });
     
-    // Fallback logic for story as well
+    // Fallback logic for story
     const generateWithFallback = async (promptText: string) => {
         const models = [
-            'gemini-1.5-flash', 
-            'gemini-1.5-flash-8b',
-            'gemini-1.5-pro',
-            'gemini-1.0-pro',
-            'gemini-pro',
-            'gemini-2.0-flash-exp'
+            'llama-3.3-70b-versatile',
+            'llama3-8b-8192', 
+            'mixtral-8x7b-32768'
         ];
         const errors: string[] = [];
 
         for (const modelName of models) {
             try {
                 console.log(`Story generation attempt: ${modelName}`);
-                const model = genAI.getGenerativeModel({ model: modelName });
-                const result = await model.generateContent(promptText);
-                const response = await result.response;
-                return response.text();
+                const completion = await groq.chat.completions.create({
+                    messages: [{ role: 'user', content: promptText }],
+                    model: modelName,
+                    temperature: 0.7, // Higher temp for creativity
+                });
+                return completion.choices[0]?.message?.content || "";
             } catch (error: any) {
                 const msg = `Model ${modelName} failed: ${error.message}`;
                 console.warn(msg);
@@ -111,7 +107,7 @@ export const generateStory = async (topic: string, gradeLevel: string = "6"): Pr
                 continue;
             }
         }
-        throw new Error(`All story models failed:\n${errors.join('\n')}`);
+        throw new Error(`All Groq models failed:\n${errors.join('\n')}`);
     };
 
     const prompt = `
@@ -130,7 +126,7 @@ export const generateStory = async (topic: string, gradeLevel: string = "6"): Pr
             "title": "Creative Title Here",
             "content": ["Paragraph 1", "Paragraph 2", "Paragraph 3"]
         }
-        Keep it under 200 words total. Make it fun and interactive!
+        Keep it under 300 words total. Make it fun and interactive!
     `;
 
     try {
@@ -143,61 +139,25 @@ export const generateStory = async (topic: string, gradeLevel: string = "6"): Pr
             throw new Error("Invalid response format from AI");
         }
     } catch (error: any) {
-        console.error("Gemini Story Error:", error);
-        throw new Error(error.message || "Failed to generate story.");
+        console.error("Groq Story Error:", error);
+        throw new Error(`Failed to generate story: ${error.message}`);
     }
 };
 
 export const validateApiKey = async (apiKey: string): Promise<string[]> => {
     try {
-        const genAI = new GoogleGenerativeAI(apiKey);
-        // Direct REST API call to list models - ultimate truth source
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+        const groq = new Groq({ apiKey, dangerouslyAllowBrowser: true });
         
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(`HTTP ${response.status}: ${errorData?.error?.message || response.statusText}`);
-        }
-
-        const data = await response.json();
-        if (!data.models) {
-            throw new Error("API returned no 'models' list.");
-        }
-
-        // Filter for generateContent supported models
-        const candidates = data.models
-            .filter((m: any) => m.supportedGenerationMethods?.includes('generateContent'))
-            .map((m: any) => m.name.replace('models/', ''));
-
-        if (candidates.length === 0) {
-            throw new Error("Key works, but no generateContent models found.");
-        }
-
-        // Now TEST generation for each candidate (lightweight)
-        const workingModels: string[] = [];
-        const results = await Promise.allSettled(candidates.map(async (modelName: string) => {
-            try {
-                const model = genAI.getGenerativeModel({ model: modelName });
-                await model.generateContent("Hello"); // Minimal cost
-                return modelName;
-            } catch (e) {
-                throw e;
-            }
-        }));
-
-        results.forEach((result, index) => {
-            if (result.status === 'fulfilled') {
-                workingModels.push(result.value as string);
-            }
+        // Simple test call
+        await groq.chat.completions.create({
+            messages: [{ role: 'user', content: "Hello" }],
+            model: 'llama3-8b-8192',
+            max_tokens: 1
         });
 
-        if (workingModels.length === 0) {
-            throw new Error("Key is valid, but ALL models failed generation test (Quotas?).");
-        }
-
-        return workingModels;
+        // If successful, return the list of supported models we use
+        return ['llama-3.3-70b-versatile', 'llama3-8b-8192', 'mixtral-8x7b-32768'];
     } catch (error: any) {
         throw new Error(`Validation Error: ${error.message}`);
     }
 };
-

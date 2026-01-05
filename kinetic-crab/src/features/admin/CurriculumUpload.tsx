@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../..
 import { Upload, FileText, CheckCircle, AlertCircle, X, Loader2, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuestionStore } from '../../store/useQuestionStore';
-import { generateQuestionsFromText } from '../../lib/gemini';
+import { generateQuestionsFromText } from '../../lib/ai';
 
 export const CurriculumUpload = () => {
     const [isDragging, setIsDragging] = useState(false);
@@ -48,7 +48,7 @@ export const CurriculumUpload = () => {
     const handleUpload = async () => {
         if (!file) return;
         if (!apiKey) {
-            setErrorMessage('Please save your Gemini API Key above first.');
+            setErrorMessage('Please save your Groq API Key above first.');
             return;
         }
 

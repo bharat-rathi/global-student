@@ -100,7 +100,7 @@ export const AdminDashboard = () => {
                     <div className="flex gap-4 items-end">
                         <div className="flex-1">
                             <Input
-                                label="Gemini API Key"
+                                label="Groq API Key"
                                 type="password"
                                 placeholder="Enter your Gemini API Key"
                                 value={tempKey}
@@ -126,7 +126,7 @@ export const AdminDashboard = () => {
                             onClick={async () => {
                                 try {
                                     alert('Testing Connection... This may take 10 seconds.');
-                                    const { validateApiKey } = await import('../../lib/gemini');
+                                    const { validateApiKey } = await import('../../lib/ai');
                                     const models = await validateApiKey(tempKey);
                                     alert(`SUCCESS! Working Models: \n${models.join('\n')}`);
                                 } catch (e: any) {
