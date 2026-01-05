@@ -15,6 +15,7 @@ interface AuthState {
     isAuthenticated: boolean;
     login: (email: string, password: string) => Promise<void>;
     loginAsDevAdmin: () => void;
+    loginAsDemoStudent: () => void;
     register: (email: string, password: string, metadata: any) => Promise<void>;
     logout: () => Promise<void>;
     checkSession: () => Promise<void>;
@@ -56,6 +57,18 @@ export const useAuthStore = create<AuthState>((set) => ({
             role: 'admin',
             firstName: 'Developer',
             lastName: 'Admin',
+        };
+        set({ user, isAuthenticated: true });
+    },
+
+    loginAsDemoStudent: () => {
+        const user: User = {
+            id: 'demo-student-id',
+            email: 'demo@student.com',
+            username: 'DemoStudent',
+            role: 'student',
+            firstName: 'Demo',
+            lastName: 'Student',
         };
         set({ user, isAuthenticated: true });
     },
