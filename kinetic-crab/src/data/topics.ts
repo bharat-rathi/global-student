@@ -8,7 +8,7 @@ export interface Topic {
 
 export const TOPICS: Record<string, Topic[]> = {
     math: [
-        { id: 'm1', title: 'Ratios & Proportions', desc: 'Understand relationships between numbers', status: 'completed', stars: 3 },
+        { id: 'm1', title: 'Arithmetic Warmup (Demo)', desc: 'Basic operations to get started', status: 'completed', stars: 3 },
         { id: 'm2', title: 'Arithmetic Operations', desc: 'Master addition, subtraction, multiplication, division', status: 'in-progress', stars: 1 },
         { id: 'm3', title: 'Fractions & Decimals', desc: 'Working with parts of a whole', status: 'locked', stars: 0 },
         { id: 'm4', title: 'Geometry Basics', desc: 'Points, lines, and angles', status: 'locked', stars: 0 },
