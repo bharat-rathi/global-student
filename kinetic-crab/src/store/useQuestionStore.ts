@@ -4,15 +4,18 @@ import type { Question } from '../data/questions';
 
 interface QuestionState {
     customQuestions: Question[];
-    apiKey: string | null;
+    geminiApiKey: string | null;
+    groqApiKey: string | null;
     fetchQuestions: () => Promise<void>;
     addQuestions: (questions: Question[]) => Promise<void>;
-    setApiKey: (key: string) => void;
+    setGeminiApiKey: (key: string) => void;
+    setGroqApiKey: (key: string) => void;
 }
 
 export const useQuestionStore = create<QuestionState>((set, get) => ({
     customQuestions: [],
-    apiKey: localStorage.getItem('gemini_api_key'),
+    geminiApiKey: localStorage.getItem('gemini_api_key'),
+    groqApiKey: localStorage.getItem('groq_api_key'),
 
     fetchQuestions: async () => {
         const { data, error } = await supabase
@@ -24,12 +27,11 @@ export const useQuestionStore = create<QuestionState>((set, get) => ({
             return;
         }
 
-        // Map Supabase snake_case to CamelCase if needed, or rely on matching types
-        // Assuming the DB schema matches the Question type roughly
+        // Map Supabase snake_case to CamelCase
         const questions = data.map((q: any) => ({
             id: q.id,
             text: q.text,
-            question: q.text, // Mapping text to question property used in app
+            question: q.text,
             options: q.options,
             answer: q.correct_answer,
             explanation: q.explanation,
@@ -51,7 +53,7 @@ export const useQuestionStore = create<QuestionState>((set, get) => ({
         const { data: { user } } = await supabase.auth.getUser();
         
         const dbQuestions = newQuestions.map(q => ({
-            text: q.question, // The app uses 'question', DB uses 'text'
+            text: q.question,
             options: q.options,
             correct_answer: q.answer,
             explanation: q.explanation,
@@ -68,8 +70,13 @@ export const useQuestionStore = create<QuestionState>((set, get) => ({
         if (error) console.error('Error saving questions to DB:', error);
     },
 
-    setApiKey: (key) => {
+    setGeminiApiKey: (key) => {
         localStorage.setItem('gemini_api_key', key);
-        set({ apiKey: key });
+        set({ geminiApiKey: key });
+    },
+
+    setGroqApiKey: (key) => {
+        localStorage.setItem('groq_api_key', key);
+        set({ groqApiKey: key });
     },
 }));

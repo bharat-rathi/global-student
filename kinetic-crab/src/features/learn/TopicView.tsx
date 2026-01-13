@@ -118,6 +118,7 @@ export const TopicView = () => {
                     {mode === 'story' ? (
                         <StoryViewer 
                             topic={topicTitle} 
+                            subject={subject || 'Science'}
                             onComplete={() => setMode('game')} 
                         />
                     ) : (

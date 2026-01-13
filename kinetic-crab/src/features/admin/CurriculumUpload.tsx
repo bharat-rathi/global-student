@@ -13,7 +13,7 @@ export const CurriculumUpload = () => {
     const [errorMessage, setErrorMessage] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const { apiKey, addQuestions } = useQuestionStore();
+    const { geminiApiKey, groqApiKey, addQuestions } = useQuestionStore();
 
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
@@ -47,8 +47,8 @@ export const CurriculumUpload = () => {
 
     const handleUpload = async () => {
         if (!file) return;
-        if (!apiKey) {
-            setErrorMessage('Please save your Groq API Key above first.');
+        if (!geminiApiKey && !groqApiKey) {
+            setErrorMessage('Please save at least one API Key (Gemini or Groq) in the dashboard above.');
             return;
         }
 
@@ -60,8 +60,8 @@ export const CurriculumUpload = () => {
 
             setUploadStatus('processing');
 
-            // Generate questions
-            const newQuestions = await generateQuestionsFromText(apiKey, text);
+            // Generate questions - Service handles fallback automatically
+            const newQuestions = await generateQuestionsFromText(text);
 
             // Save to store
             addQuestions(newQuestions);

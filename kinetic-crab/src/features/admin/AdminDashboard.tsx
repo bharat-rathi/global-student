@@ -9,14 +9,21 @@ import { Users, BookOpen, Activity, Settings, Key } from 'lucide-react';
 
 export const AdminDashboard = () => {
     const { user } = useAuthStore();
-    const { apiKey, setApiKey } = useQuestionStore();
-    const [tempKey, setTempKey] = useState(apiKey || '');
-    const [isKeySaved, setIsKeySaved] = useState(!!apiKey);
+    const { 
+        geminiApiKey, setGeminiApiKey,
+        groqApiKey, setGroqApiKey
+    } = useQuestionStore();
+    
+    // Local state for inputs
+    const [tempGeminiKey, setTempGeminiKey] = useState(geminiApiKey || '');
+    const [isGeminiSaved, setIsGeminiSaved] = useState(!!geminiApiKey);
+    
+    const [tempGroqKey, setTempGroqKey] = useState(groqApiKey || '');
+    const [isGroqSaved, setIsGroqSaved] = useState(!!groqApiKey);
 
-    const handleSaveKey = () => {
-        setApiKey(tempKey);
-        setIsKeySaved(true);
-    };
+    // Sync if store changes externally
+    // (Optional, usually good for reset)
+    // useEffect(() => { ... }, [geminiApiKey, groqApiKey]);
 
     return (
         <div className="space-y-8 pb-8">
@@ -97,27 +104,59 @@ export const AdminDashboard = () => {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
+                <div className="space-y-4">
+                    {/* Gemini Key Input */}
                     <div className="flex gap-4 items-end">
                         <div className="flex-1">
                             <Input
-                                label="Groq API Key"
+                                label="Google Gemini API Key (Primary)"
                                 type="password"
-                                placeholder="Enter your Gemini API Key"
-                                value={tempKey}
+                                placeholder="Enter Google API Key"
+                                value={tempGeminiKey}
                                 onChange={(e) => {
-                                    setTempKey(e.target.value);
-                                    setIsKeySaved(false);
+                                    setTempGeminiKey(e.target.value);
+                                    setIsGeminiSaved(false);
                                 }}
                             />
                         </div>
                         <Button
-                            onClick={handleSaveKey}
-                            disabled={isKeySaved || !tempKey}
-                            className={isKeySaved ? "bg-green-600" : "bg-blue-600"}
+                            onClick={() => {
+                                setGeminiApiKey(tempGeminiKey);
+                                setIsGeminiSaved(true);
+                            }}
+                            disabled={isGeminiSaved || !tempGeminiKey}
+                            className={isGeminiSaved ? "bg-green-600" : "bg-blue-600"}
                         >
-                            {isKeySaved ? "Saved" : "Save Key"}
+                            {isGeminiSaved ? "Saved" : "Save Gemini"}
                         </Button>
                     </div>
+
+                    {/* Groq Key Input */}
+                    <div className="flex gap-4 items-end">
+                        <div className="flex-1">
+                            <Input
+                                label="Groq API Key (Fallback)"
+                                type="password"
+                                placeholder="Enter Groq API Key"
+                                value={tempGroqKey}
+                                onChange={(e) => {
+                                    setTempGroqKey(e.target.value);
+                                    setIsGroqSaved(false);
+                                }}
+                            />
+                        </div>
+                        <Button
+                            onClick={() => {
+                                setGroqApiKey(tempGroqKey);
+                                setIsGroqSaved(true);
+                            }}
+                            disabled={isGroqSaved || !tempGroqKey}
+                            className={isGroqSaved ? "bg-green-600" : "bg-blue-600"}
+                        >
+                            {isGroqSaved ? "Saved" : "Save Groq"}
+                        </Button>
+                    </div>
+
                     {/* Diagnostic Tool */}
                     <div className="mt-4 border-t border-slate-700 pt-4">
                         <Button 
@@ -125,23 +164,30 @@ export const AdminDashboard = () => {
                             size="sm"
                             onClick={async () => {
                                 try {
-                                    alert('Testing Connection... This may take 10 seconds.');
-                                    const { validateApiKey } = await import('../../lib/ai');
-                                    const models = await validateApiKey(tempKey);
-                                    alert(`SUCCESS! Working Models: \n${models.join('\n')}`);
+                                    alert('Testing Connections... This may take 10 seconds.');
+                                    const { validateApiKeys } = await import('../../lib/ai');
+                                    const results = await validateApiKeys(tempGeminiKey, tempGroqKey);
+                                    
+                                    let msg = "CONNECTION RESULTS:\n\n";
+                                    msg += `Gemini: ${results.gemini ? "✅ SUCCESS" : "❌ FAILED"}\n`;
+                                    msg += `Groq:   ${results.groq ? "✅ SUCCESS" : "❌ FAILED"}\n\n`;
+                                    msg += `Working Models:\n${results.models.join('\n')}`;
+                                    
+                                    alert(msg);
                                 } catch (e: any) {
                                     alert(`ERROR: ${e.message}`);
                                 }
                             }}
                         >
-                            Test Connection / Find Models
+                            Test Connections
                         </Button>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                        Required for generating questions from curriculum files. Keys are stored locally in your browser.
-                    </p>
-                </CardContent>
-            </Card>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                    Enter keys for both providers to ensure maximum reliability. The system will try Gemini first, then Groq.
+                </p>
+            </CardContent>
+        </Card>
 
             {/* Main Content Area */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
