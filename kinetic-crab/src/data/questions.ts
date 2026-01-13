@@ -824,9 +824,12 @@ export const QUESTIONS: Question[] = [
 ];
 
 export const getQuestions = (subject: string, topicId: string, difficulty?: Difficulty) => {
-    return QUESTIONS.filter(q =>
+    console.log(`[getQuestions] Called with: subject=${subject}, topicId=${topicId}, difficulty=${difficulty}`);
+    const filtered = QUESTIONS.filter(q =>
         q.subject === subject &&
         (topicId === 'all' || q.topicId === topicId) &&
         (!difficulty || q.difficulty === difficulty)
     );
+    console.log(`[getQuestions] Found ${filtered.length} questions`);
+    return filtered;
 };

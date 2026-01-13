@@ -42,6 +42,7 @@ export const QuizRace = ({ subject = 'math', topicId = 'm1', difficulty, onCompl
         const shuffled = allQuestions.sort(() => Math.random() - 0.5).slice(0, 10);
 
         setQuestions(shuffled);
+        console.log(`[QuizRace] State updated. Questions count: ${shuffled.length}`);
         setGameState('start');
     }, [subject, topicId, difficulty, customQuestions]);
 
