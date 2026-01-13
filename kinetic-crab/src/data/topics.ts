@@ -12,6 +12,7 @@ export const TOPICS: Record<string, Topic[]> = {
         { id: 'm2', title: 'Arithmetic Operations', desc: 'Master addition, subtraction, multiplication, division', status: 'in-progress', stars: 1 },
         { id: 'm3', title: 'Fractions & Decimals', desc: 'Working with parts of a whole', status: 'locked', stars: 0 },
         { id: 'm4', title: 'Geometry Basics', desc: 'Points, lines, and angles', status: 'locked', stars: 0 },
+        { id: 'm5', title: 'Ratios & Proportions (G7)', desc: 'Master ratios, rates, and scaling across global standards', status: 'in-progress', stars: 0 },
     ],
     science: [
         { id: 's1', title: 'Matter & Atoms', desc: 'The building blocks of the universe', status: 'in-progress', stars: 2 },
