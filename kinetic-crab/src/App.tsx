@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { Button } from './components/ui/Button';
 import { useAuthStore } from './store/useAuthStore';
 import { MainLayout } from './components/layout/MainLayout';
@@ -12,6 +12,9 @@ import { TopicList } from './features/learn/TopicList';
 import { TopicView } from './features/learn/TopicView';
 import { AdminLogin } from './features/admin/AdminLogin';
 import { AdminDashboard } from './features/admin/AdminDashboard';
+// New feature imports
+import { MathRush } from './features/games/MathRush';
+import { ScienceStory } from './features/learn/ScienceStory';
 
 // Placeholders
 const LandingPage = () => {
@@ -60,6 +63,9 @@ function App() {
           <Route path="parent/verify" element={<ParentVerify />} />
           <Route path="parent/dashboard" element={<ParentDashboard />} />
           <Route path="admin/dashboard" element={<AdminDashboard />} />
+          {/* New kid‑friendly routes */}
+          <Route path="math-rush" element={<MathRush />} />
+          <Route path="science-story" element={<ScienceStory />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
         <Route path="/admin/login" element={<AdminLogin />} />
